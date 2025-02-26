@@ -44,9 +44,17 @@ class Ws {
     socket.on('disconnect', () => this.handleDisconnect(user))
   }
 
-  private async handleMessage(_socket: Socket, user: User, content: string) {
+  private async handleMessage(socket: Socket, user: User, content: string) {
     const message = await ChatService.saveMessage(user.id, content)
     this.io?.emit('message', message)
+
+    socket.on('typing', () => {
+      socket.broadcast.emit('typing', { userId: user.id, fullName: user.fullName })
+    })
+
+    socket.on('stop_typing', () => {
+      socket.broadcast.emit('stop_typing', { userId: user.id })
+    })
   }
 
   private handleDisconnect(user: User) {
