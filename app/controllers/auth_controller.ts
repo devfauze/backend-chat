@@ -26,7 +26,10 @@ export default class AuthController {
       abilities: JSON.stringify(['*']),
     })
 
-    return response.ok({ user, token })
+    return response.ok({
+      user,
+      token: token.hash,
+    })
   }
 
   async logout({ auth, response }: HttpContext) {

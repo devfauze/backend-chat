@@ -1,25 +1,36 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
-import type { Authenticators } from '@adonisjs/auth/types'
+import AccessToken from '#models/access_token'
+import User from '#models/user'
 
-/**
- * Auth middleware is used authenticate HTTP requests and deny
- * access to unauthenticated users.
- */
 export default class AuthMiddleware {
-  /**
-   * The URL to redirect to, when authentication fails
-   */
   redirectTo = '/login'
 
-  async handle(
-    ctx: HttpContext,
-    next: NextFn,
-    options: {
-      guards?: (keyof Authenticators)[]
-    } = {}
-  ) {
-    await ctx.auth.authenticateUsing(options.guards, { loginRoute: this.redirectTo })
+  async handle(ctx: HttpContext, next: NextFn) {
+    const authHeader = ctx.request.header('authorization')
+
+    if (!authHeader) {
+      return ctx.response.unauthorized({ error: 'Token não fornecido' })
+    }
+
+    const [, token] = authHeader.split(' ')
+
+    const accessToken = await AccessToken.findBy('hash', token)
+    if (!accessToken) {
+      return ctx.response.unauthorized({ error: 'Token inválido' })
+    }
+
+    const user = await User.find(accessToken.tokenableId)
+    if (!user) {
+      return ctx.response.unauthorized({ error: 'Usuário não encontrado' })
+    }
+
+    Object.defineProperty(ctx.auth, 'user', {
+      value: user,
+      writable: false,
+      enumerable: true,
+    })
+
     return next()
   }
 }

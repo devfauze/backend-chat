@@ -5,7 +5,7 @@ import AccessToken from '#models/access_token'
 import User from '#models/user'
 
 class Ws {
-  private io: Server | undefined
+  io: Server | undefined
   private booted = false
 
   boot() {

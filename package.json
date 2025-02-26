@@ -58,6 +58,7 @@
     "@adonisjs/lucid": "^21.6.0",
     "@adonisjs/websocket": "^1.0.12",
     "@vinejs/vine": "^3.0.0",
+    "date-fns": "^4.1.0",
     "luxon": "^3.5.0",
     "pg": "^8.13.3",
     "reflect-metadata": "^0.2.2",

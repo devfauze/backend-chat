@@ -1,3 +1,4 @@
+
 import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
 import User from './user.js'
 
@@ -10,6 +11,10 @@ export default class Message extends BaseModel {
 
   @column()
   public userId!: number
+
+  // @ts-ignore
+  @column.dateTime({ columnName: 'created_at' })
+  public createdAt!: Date
 
   // @ts-ignore
   @belongsTo(() => User)
