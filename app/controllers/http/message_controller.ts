@@ -1,11 +1,10 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import ChatService from '../../services/chat_service.js'
-import Ws from '../../services/ws.js'
+import ChatService from '#services/chat_service'
+import Ws from '#services/ws'
 
 export default class MessagesController {
   async index({ response }: HttpContext) {
-    const messages = await ChatService.getMessages()
-    return response.ok(messages)
+    return response.ok(await ChatService.getMessages())
   }
 
   async store({ request, auth, response }: HttpContext) {
@@ -15,8 +14,7 @@ export default class MessagesController {
     const { content } = request.only(['content'])
     const message = await ChatService.saveMessage(user.id, content)
 
-    // @ts-ignore
-    Ws.io.emit('message', {
+    Ws.io?.emit('message', {
       id: message.id,
       content: message.content,
       createdAt: message.createdAt,
