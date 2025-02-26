@@ -1,4 +1,5 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
+import { DateTime } from 'luxon'
 
 export default class AccessToken extends BaseModel {
   public static table = 'auth_access_tokens'
@@ -24,9 +25,9 @@ export default class AccessToken extends BaseModel {
   @column()
   declare abilities: string
 
-  @column()
-  declare lastUsedAt: Date
+  @column.dateTime()
+  declare lastUsedAt: DateTime | null
 
-  @column()
-  declare expiresAt: Date
+  @column.dateTime()
+  declare expiresAt: DateTime | null
 }

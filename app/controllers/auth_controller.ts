@@ -6,10 +6,7 @@ import AccessToken from '#models/access_token'
 export default class AuthController {
   async register({ request, response }: HttpContext) {
     const data = request.only(['full_name', 'email', 'password'])
-    const user = await User.create({
-      ...data,
-    })
-
+    const user = await User.create(data)
     return response.created({ user })
   }
 
@@ -34,13 +31,9 @@ export default class AuthController {
 
   async logout({ auth, response }: HttpContext) {
     const user = auth.use('api').user
-
-    if (!user) {
-      return response.unauthorized({ error: 'Usuário não autenticado' })
-    }
+    if (!user) return response.unauthorized({ error: 'Usuário não autenticado' })
 
     await AccessToken.query().where('tokenableId', user.id).delete()
-
     return response.ok({ message: 'Logout realizado com sucesso' })
   }
 }

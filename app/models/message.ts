@@ -1,6 +1,4 @@
-// @ts-ignore
-import { BaseModel, column, belongsTo, BelongsTo } from '@adonisjs/lucid/orm'
-import { DateTime } from 'luxon'
+import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
 import User from './user.js'
 
 export default class Message extends BaseModel {
@@ -8,15 +6,12 @@ export default class Message extends BaseModel {
   public id!: number
 
   @column()
-  public userId!: number
-
-  @column()
   public content!: string
 
-  @column.dateTime({ autoCreate: true })
-  public createdAt!: DateTime
+  @column()
+  public userId!: number
 
   // @ts-ignore
   @belongsTo(() => User)
-  public user!: belongsTo<typeof User>
+  public user!: typeof User
 }
