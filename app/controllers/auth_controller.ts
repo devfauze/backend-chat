@@ -3,16 +3,29 @@ import User from '#models/user'
 import hash from '@adonisjs/core/services/hash'
 import AccessToken from '#models/access_token'
 import { DateTime } from 'luxon'
+import validator from 'validator'
+import { Database } from '@adonisjs/lucid/database'
 
 export default class AuthController {
   async register({ request, response }: HttpContext) {
-    const data = request.only(['full_name', 'email', 'password'])
-    const user = await User.create(data)
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    let { full_name, email, password } = request.only(['full_name', 'email', 'password'])
+
+    full_name = validator.escape(validator.trim(full_name))
+    email = validator.escape(validator.trim(email))
+    password = validator.trim(password)
+
+    // @ts-ignore
+    const user = await User.create({ full_name, email, password })
     return response.created({ user })
   }
 
   async login({ request, response }: HttpContext) {
-    const { email, password } = request.only(['email', 'password'])
+    let { email, password } = request.only(['email', 'password'])
+
+    email = validator.escape(validator.trim(email))
+    password = validator.trim(password)
+
     const user = await User.findByOrFail('email', email)
 
     if (!(await hash.verify(user.password, password))) {
@@ -39,7 +52,8 @@ export default class AuthController {
     const user = auth.use('api').user
     if (!user) return response.unauthorized({ error: 'Usuário não autenticado' })
 
-    await AccessToken.query().where('tokenableId', user.id).delete()
+    // @ts-ignore
+    await Database.from('access_tokens').where('tokenableId', user.id).delete()
     return response.ok({ message: 'Logout realizado com sucesso' })
   }
 }

@@ -1,6 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import ChatService from '#services/chat_service'
 import Ws from '#services/ws'
+import validator from 'validator'
 
 export default class MessagesController {
   async index({ request, response }: HttpContext) {
@@ -15,7 +16,10 @@ export default class MessagesController {
     const user = auth.user
     if (!user) return response.unauthorized({ error: 'Não autorizado' })
 
-    const { content, room } = request.only(['content', 'room'])
+    let { content, room } = request.only(['content', 'room'])
+    content = validator.trim(content)
+    room = validator.trim(room)
+
     if (!content) return response.badRequest({ error: 'Mensagem vazia' })
     if (!room) return response.badRequest({ error: 'Sala não informada' })
 
@@ -34,9 +38,12 @@ export default class MessagesController {
   }
 
   async search({ request, response }: HttpContext) {
-    const { query, room } = request.qs()
+    let { query, room } = request.qs()
     if (!query) return response.badRequest({ error: 'Termo de busca não informado' })
     if (!room) return response.badRequest({ error: 'Sala não informada' })
+
+    query = validator.trim(query)
+    room = validator.trim(room)
 
     const messages = await ChatService.searchMessages(query, room)
     return response.ok(messages)
