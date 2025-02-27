@@ -46,12 +46,21 @@ class Ws {
 
     socket.on('message', ({ room, content }) => this.handleMessage(socket, user, room, content))
 
-    socket.on('typing', (room: string) => {
-      socket.to(room).emit('typing', { userId: user.id, fullName: user.fullName })
+    socket.on('typing', async ({ room, userId }) => {
+
+      const foundUser = await User.find(userId)
+      if (!foundUser) return
+
+      const userJson = foundUser.toJSON()
+      socket.broadcast.to(room).emit('userTyping', { fullName: userJson.fullName })
     })
 
-    socket.on('stop_typing', (room: string) => {
-      socket.to(room).emit('stop_typing', { userId: user.id })
+    socket.on('stopTyping', async ({ room, userId }) => {
+      const foundUser = await User.find(userId)
+      if (!foundUser) return
+
+      const userJson = foundUser.toJSON()
+      socket.broadcast.to(room).emit('userStoppedTyping', { fullName: userJson.fullName })
     })
 
     socket.on('disconnect', () => this.handleDisconnect(user))
