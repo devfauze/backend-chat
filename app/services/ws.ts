@@ -37,28 +37,34 @@ class Ws {
   }
 
   private async handleConnection(socket: Socket, user: User) {
-    const messages = await ChatService.getMessages()
-    socket.emit('messages', messages)
 
-    socket.on('message', (content: string) => this.handleMessage(socket, user, content))
+    socket.on('joinRoom', async (room: string) => {
+      socket.join(room)
+
+      const messages = await ChatService.getMessagesByRoom(room)
+      socket.emit('messages', messages)
+    })
+
+    socket.on('message', ({ room, content }) => this.handleMessage(socket, user, room, content))
+
+    socket.on('typing', (room: string) => {
+      socket.to(room).emit('typing', { userId: user.id, fullName: user.fullName })
+    })
+
+    socket.on('stop_typing', (room: string) => {
+      socket.to(room).emit('stop_typing', { userId: user.id })
+    })
+
     socket.on('disconnect', () => this.handleDisconnect(user))
   }
 
-  private async handleMessage(socket: Socket, user: User, content: string) {
-    const message = await ChatService.saveMessage(user.id, content)
-    this.io?.emit('message', message)
-
-    socket.on('typing', () => {
-      socket.broadcast.emit('typing', { userId: user.id, fullName: user.fullName })
-    })
-
-    socket.on('stop_typing', () => {
-      socket.broadcast.emit('stop_typing', { userId: user.id })
-    })
+  private async handleMessage(_socket: Socket, user: User, room: string, content: string) {
+    const message = await ChatService.saveMessage(user.id, content, room)
+    this.io?.to(room).emit('message', message)
   }
 
   private handleDisconnect(user: User) {
-    console.log(`Usuário desconectado: ${user.fullName} (ID: ${user.id})`)
+    console.log(`❌ Usuário desconectado: ${user.fullName} (ID: ${user.id})`)
   }
 }
 

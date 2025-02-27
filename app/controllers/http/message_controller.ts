@@ -3,22 +3,30 @@ import ChatService from '#services/chat_service'
 import Ws from '#services/ws'
 
 export default class MessagesController {
-  async index({ response }: HttpContext) {
-    return response.ok(await ChatService.getMessages())
+  async index({ request, response }: HttpContext) {
+    const { room } = request.qs()
+    if (!room) return response.badRequest({ error: 'Sala não informada' })
+
+    const messages = await ChatService.getMessagesByRoom(room)
+    return response.ok(messages)
   }
 
   async store({ request, auth, response }: HttpContext) {
     const user = auth.user
     if (!user) return response.unauthorized({ error: 'Não autorizado' })
 
-    const { content } = request.only(['content'])
-    const message = await ChatService.saveMessage(user.id, content)
+    const { content, room } = request.only(['content', 'room'])
+    if (!content) return response.badRequest({ error: 'Mensagem vazia' })
+    if (!room) return response.badRequest({ error: 'Sala não informada' })
+
+    const message = await ChatService.saveMessage(user.id, content, room)
 
     Ws.io?.emit('message', {
       id: message.id,
       content: message.content,
       createdAt: message.createdAt,
       userId: message.userId,
+      room: message.room,
       user: { name: user.fullName },
     })
 

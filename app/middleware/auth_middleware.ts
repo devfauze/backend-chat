@@ -7,15 +7,14 @@ export default class AuthMiddleware {
   redirectTo = '/login'
 
   async handle(ctx: HttpContext, next: NextFn) {
-    const authHeader = ctx.request.header('authorization')
+    let token = ctx.request.header('authorization')?.split(' ')[1] || ctx.request.cookie('token')
 
-    if (!authHeader) {
+    if (!token) {
       return ctx.response.unauthorized({ error: 'Token não fornecido' })
     }
 
-    const [, token] = authHeader.split(' ')
+    const accessToken = await AccessToken.query().where('hash', token).first()
 
-    const accessToken = await AccessToken.findBy('hash', token)
     if (!accessToken) {
       return ctx.response.unauthorized({ error: 'Token inválido' })
     }
@@ -25,11 +24,7 @@ export default class AuthMiddleware {
       return ctx.response.unauthorized({ error: 'Usuário não encontrado' })
     }
 
-    Object.defineProperty(ctx.auth, 'user', {
-      value: user,
-      writable: false,
-      enumerable: true,
-    })
+    ctx.auth = { user } as any
 
     return next()
   }

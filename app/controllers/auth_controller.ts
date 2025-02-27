@@ -2,6 +2,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import User from '#models/user'
 import hash from '@adonisjs/core/services/hash'
 import AccessToken from '#models/access_token'
+import { DateTime } from 'luxon'
 
 export default class AuthController {
   async register({ request, response }: HttpContext) {
@@ -24,11 +25,13 @@ export default class AuthController {
       name: 'auth_token',
       hash: await hash.make(user.id.toString()),
       abilities: JSON.stringify(['*']),
+      expiresAt: DateTime.now().plus({ minutes: 30 }),
     })
 
     return response.ok({
       user,
       token: token.hash,
+      expiresAt: token.expiresAt,
     })
   }
 
