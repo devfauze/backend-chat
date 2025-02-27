@@ -32,4 +32,13 @@ export default class MessagesController {
 
     return response.created(message)
   }
+
+  async search({ request, response }: HttpContext) {
+    const { query, room } = request.qs()
+    if (!query) return response.badRequest({ error: 'Termo de busca não informado' })
+    if (!room) return response.badRequest({ error: 'Sala não informada' })
+
+    const messages = await ChatService.searchMessages(query, room)
+    return response.ok(messages)
+  }
 }

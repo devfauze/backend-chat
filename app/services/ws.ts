@@ -37,7 +37,6 @@ class Ws {
   }
 
   private async handleConnection(socket: Socket, user: User) {
-
     socket.on('joinRoom', async (room: string) => {
       socket.join(room)
 

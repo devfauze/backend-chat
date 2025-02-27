@@ -17,4 +17,15 @@ export default class ChatService {
   static async getUserById(userId: number) {
     return User.find(userId)
   }
+
+  static async searchMessages(query: string, room: string) {
+    const sanitizedRoom = room.trim()
+
+    const messages = await Message.query()
+      .where('room', sanitizedRoom)
+      .andWhereRaw('LOWER(content) LIKE ?', [`%${query.toLowerCase()}%`])
+      .orderBy('created_at', 'desc')
+
+    return messages
+  }
 }
