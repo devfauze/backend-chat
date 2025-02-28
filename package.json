@@ -6,6 +6,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "start": "node build/bin/server.js",
+    "setup": "npm install && docker-compose up -d && node ace migration:run && npm run dev",
     "build": "node ace build",
     "dev": "node ace serve --hmr",
     "test": "node ace test",
