@@ -7,4 +7,5 @@ router.post('/login', [AuthController, 'login'])
 router
   .post('/logout', [AuthController, 'logout'])
   .middleware(() => import('#middleware/auth_middleware'))
+router.get('/messages', [MessagesController, 'index'])
 router.get('/messages/search', [MessagesController, 'search'])

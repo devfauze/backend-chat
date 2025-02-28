@@ -4,18 +4,20 @@ import validator from 'validator'
 
 export default class ChatService {
   static async saveMessage(userId: number, content: string, room: string) {
-    content = validator.escape(validator.trim(content))
-    room = validator.trim(room)
-
     const message = await Message.create({ userId, content, room })
     await message.load('user')
+
     return message
   }
 
-  static async getMessagesByRoom(room: string) {
-    room = validator.trim(room)
+  static async getMessagesByRoom(room: string, page: number = 1, limit: number = 10) {
+    const messages = await Message.query()
+      .where('room', room)
+      .preload('user')
+      .orderBy('created_at', 'asc')
+      .paginate(page, limit)
 
-    return Message.query().where('room', room).preload('user').orderBy('created_at', 'asc')
+    return messages
   }
 
   static async getUserById(userId: number) {

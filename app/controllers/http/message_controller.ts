@@ -8,7 +8,15 @@ export default class MessagesController {
     const { room } = request.qs()
     if (!room) return response.badRequest({ error: 'Sala não informada' })
 
-    const messages = await ChatService.getMessagesByRoom(room)
+    const page = request.input('page', 1)
+    const limit = request.input('limit', 10)
+
+    const messages = await ChatService.getMessagesByRoom(room, page, limit)
+
+    if (!Array.isArray(messages)) {
+      return response.badRequest({ error: 'Erro ao obter mensagens' })
+    }
+
     return response.ok(messages)
   }
 
